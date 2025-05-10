@@ -1,7 +1,9 @@
+// app/src/main/java/com/kokoro/tts/di/NetworkModule.kt
 package com.kokoro.tts.di
 
 import com.kokoro.tts.HardcodedAuthInterceptor
 import com.kokoro.tts.PhonemizerApi
+import com.kokoro.tts.data.api.TokenizerApi
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -42,5 +44,11 @@ object NetworkModule {
     @Singleton
     fun providePhonemizerApi(retrofit: Retrofit): PhonemizerApi {
         return retrofit.create(PhonemizerApi::class.java)
+    }
+
+    @Provides
+    @Singleton
+    fun provideTokenizerApi(retrofit: Retrofit): TokenizerApi {
+        return retrofit.create(TokenizerApi::class.java)
     }
 }

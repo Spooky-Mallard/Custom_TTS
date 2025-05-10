@@ -1,3 +1,4 @@
+// app/src/main/java/com/kokoro/tts/KokoroTtsService.kt
 package com.kokoro.tts
 
 import android.speech.tts.SynthesisCallback
@@ -6,9 +7,7 @@ import android.speech.tts.TextToSpeechService
 import android.speech.tts.SynthesisRequest
 import android.speech.tts.Voice
 import android.util.Log
-import dagger.Provides
 import dagger.hilt.android.AndroidEntryPoint
-import dagger.hilt.android.scopes.ServiceScoped
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -16,14 +15,11 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.util.Locale
-import javax.inject.Singleton
-
 
 @AndroidEntryPoint
-class KokoroTtsService @Inject constructor(
-    private val inferenceEngine: InferenceEngine,
-    private val phonemizer: Phonemizer
-) : TextToSpeechService() {
+class KokoroTtsService : TextToSpeechService() {
+
+    @Inject lateinit var inferenceEngine: InferenceEngine
 
     private val serviceJob = Job()
     private val serviceScope = CoroutineScope(Dispatchers.Default + serviceJob)
@@ -31,35 +27,28 @@ class KokoroTtsService @Inject constructor(
     private val supportedVoices = listOf(
         Voice(
             "af_heart", // Voice ID
-            Locale("eng", "US"), // Locale (e.g., English)
+            Locale("eng", "USA"), // Locale (e.g., English)
             Voice.QUALITY_HIGH, // Quality
             Voice.LATENCY_NORMAL, // Latency
-            true, // Requires network?
+            false, // Requires network? (Now false as we have local fallback)
             emptySet() // Extra features
         ),
         Voice(
             "af_bella",
-            Locale("en", "US"),
+            Locale("eng", "USA"),
             Voice.QUALITY_HIGH,
             Voice.LATENCY_NORMAL,
-            true,
+            false,
             emptySet()
         )
     )
 
     override fun onCreate() {
         super.onCreate()
-        serviceScope.launch {
-            try {
-                phonemizer.initialize(assets)
-                Log.d("TtsService", "Phonemizer initialized!")
-            } catch (e: Exception) {
-                Log.e("TtsService", "Phonemizer initialization failed", e)
-            }
-        }
+        Log.d("TtsService", "Service created!")
     }
 
-    override public fun onSynthesizeText(request: SynthesisRequest, callback: SynthesisCallback) {
+    override fun onSynthesizeText(request: SynthesisRequest, callback: SynthesisCallback) {
         val text = request.text
         val voice = request.voiceName ?: "af_heart"
         // Handle synthesis parameters
@@ -80,12 +69,14 @@ class KokoroTtsService @Inject constructor(
                     }
                 }
             } catch (e: Exception) {
+                Log.e("TtsService", "Synthesis error", e)
                 withContext(Dispatchers.Main) {
                     callback.error(TextToSpeech.ERROR_SYNTHESIS)
                 }
             }
         }
     }
+
     private fun applyAudioModifications(
         audio: FloatArray,
         pitch: Float,

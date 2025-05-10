@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.res.AssetManager
 import com.kokoro.tts.InferenceEngine
 import com.kokoro.tts.Phonemizer
+import com.kokoro.tts.data.repository.TokenizerRepository
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -36,9 +37,9 @@ object AppModule {
     fun provideInferenceEngine(
         @ApplicationContext contextManager: Context,
         assetManager: AssetManager,
-        phonemizer: Phonemizer,
+        tokenizerRepository: TokenizerRepository,
         coroutineScope: CoroutineScope
     ): InferenceEngine {
-        return InferenceEngine(contextManager, assetManager, phonemizer, coroutineScope)
+        return InferenceEngine(contextManager, assetManager, tokenizerRepository, coroutineScope)
     }
 }
